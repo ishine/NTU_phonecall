@@ -11,26 +11,22 @@ mkdir $tmp_audio
 
 ./file_check.sh $data
 
-#set sampling rate depending on recipe
-setrate=8000
-
 for wav in $corpus/*; do
     uttID=$(basename $wav)
     uttID=${uttID%".wav"}
 
-    format=$(file $wav | cut -d ',' -f 3 | cut -d ' ' -f 3)
-    samplerate=$(file $wav | cut -d ',' -f 5 | cut -d ' ' -f 3)
+    format=$(file $wav | cut -d, -f 3 | cut -d ' ' -f 3)
+    samplerate=$(file $wav | cut -d, -f 5 | cut -d -f 3)
     echo "$uttID.wav : $samplerate"
     echo "$uttID.wav : $format"
     if [ "$format" == "PCM" ]; then
-	if [ "$samplerate" == "$setrate"]; then
+	if [ "$samplerate" == "8000"]; then
 	  echo "$uttID $wav" >> $data/wav.scp
 	else 
-	  ffmpeg -i $wav -f wav -ar $setrate $tmp_audio/$uttID.wav
+	  ffmpeg -i $wav -ar 8000 $tmp_audio/$uttID.wav
 	  echo "$uttID $tmp_audio/$uttID.wav" >> $data/wav.scp
-	fi
     else 
-	ffmpeg -v 8 -i $wav -f wav -acodec pcm_s16le -ar $setrate $tmp_audio/$uttID.wav
+	ffmpeg -va 8 -i $wav -f wav -acodec pcm_s16le -ar 8000 $tmp_audio/$uttID.wav
 	echo "$uttID $tmp_audio/$uttID.wav" >> $data/wav.scp
     fi 
     echo "$uttID $numspk" >> $data/reco2num_spk
